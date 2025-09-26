@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    crossorigin="anonymous"
+  />
+  <title>Federação Paulista</title>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg bg-danger">
+    <div class="container-fluid">
+      <a class="navbar-brand text-white" href="#">Federação</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link text-white active" aria-current="page" href="#"
+              >Inicio</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" href="#">Federados</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link text-white dropdown-toggle"
+              href="#"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Competição
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item text-dark" href="#">Praia</a></li>
+              <li><a class="dropdown-item text-dark" href="#">Quadra</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <br />
+
+  <div class="container">
+    <div class="mb-3">
+      <div class="row align-items-end">
+        <div class="col-2">
+          <button
+            type="button"
+            class="btn btn-primary w-100"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCadastroUsuario"
+            onclick="limpar()"
+          >
+            Fazer Cadastro
+          </button>
+        </div>
+        <div class="col-2">
+          <label for="pesquisa" class="form-label">Nome completo:</label>
+        </div>
+        <div class="col-8 d-flex gap-2">
+          <input
+            class="form-control"
+            list="datalistOptions"
+            id="pesquisa"
+            placeholder="Pesquise aqui..."
+          />
+          <button class="btn btn-secondary" onclick="carregar()">
+            Listar todos
+          </button>
+          <button class="btn btn-success" onclick="pesquisar()">Pesquisar</button>
+        </div>
+      </div>
+    </div>
+
+    <br /><br />
+
+    <div class="row mt-3">
+      <div class="col-12">
+        <form>
+          <table id="tabela" class="table table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Login</th>
+                <th scope="col">Nome completo</th>
+                <th scope="col">Email</th>
+                <th scope="col">Ativo</th>
+                <th scope="col">Ações</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="modalCadastroUsuario"
+    data-bs-backdrop="static"
+    tabindex="-1"
+    aria-labelledby="modalCadastroUsuarioLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="formUsuario" onsubmit="event.preventDefault(); salvar();">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalCadastroUsuarioLabel">
+              Cadastro de Usuário
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Fechar"
+              onclick="limpar()"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="id" />
+
+            <div class="mb-3">
+              <input
+                type="text"
+                class="form-control"
+                id="login"
+                name="login"
+                placeholder="Login"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <input
+                type="text"
+                class="form-control"
+                id="nome"
+                name="nome"
+                placeholder="Nome"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                placeholder="Email"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <input
+                type="password"
+                class="form-control"
+                id="senha"
+                name="senha"
+                placeholder="Senha"
+                required
+              />
+            </div>
+            <div class="mb-3 form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="ativo"
+                name="ativo"
+              />
+              <label class="form-check-label" for="ativo">Ativo?</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+              onclick="limpar()"
+            >
+              Fechar
+            </button>
+            <button type="submit" class="btn btn-danger">Salvar Usuário</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:8081/api/usuario.php";
+
+    function carregar(pesquisa = "") {
+      const tbody = document.querySelector("#tabela tbody");
+      tbody.innerHTML = "";
+
+      let url = API_URL;
+      if (pesquisa) {
+        url += "?pesquisa=" + encodeURIComponent(pesquisa);
+      }
+
+      fetch(url)
+        .then((resposta) => resposta.json())
+        .then((dados) => {
+          console.log(dados);
+          dados.forEach((usuario) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                  <td>${usuario.ID}</td>
+                  <td>${usuario.LOGIN}</td>
+                  <td>${usuario.NOME}</td>
+                  <td>${usuario.EMAIL}</td>
+                  <td>${usuario.ATIVO == 1 ? "Sim" : "Não"}</td>
+                  <td>
+                    <button class="btn btn-sm btn-warning" onclick='editar(${JSON.stringify(
+                      usuario
+                    )})'>Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick='excluir(${usuario.ID})'>Excluir</button>
+                  </td>
+                `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch((err) => {
+          console.error("Erro ao carregar dados:", err);
+        });
+    }
+
+    function pesquisar() {
+      const valor = document.getElementById("pesquisa").value.trim();
+      carregar(valor);
+    }
+
+    async function salvar() {
+      const id = document.getElementById("id").value;
+      const login = document.getElementById("login").value.trim();
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+      const ativo = document.getElementById("ativo").checked ? 1 : 0;
+
+      if (!login || !nome || !email || (!id && !senha)) {
+        alert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      const payload = {
+        LOGIN: login,
+        NOME: nome,
+        EMAIL: email,
+        SENHA: senha,
+        ATIVO: ativo,
+      };
+
+      let method = "POST";
+      if (id) {
+        method = "PUT";
+        payload.ID = id;
+      }
+
+      try {
+        const res = await fetch(API_URL, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.status === "ok") {
+          alert("Usuário salvo com sucesso!");
+          limpar();
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("modalCadastroUsuario")
+          );
+          modal.hide();
+          carregar();
+        } else {
+          alert("Erro ao salvar usuário");
+        }
+      } catch (error) {
+        console.error("Erro na requisição:", error);
+        alert("Erro ao salvar usuário");
+      }
+    }
+
+    function editar(usuario) {
+      document.getElementById("id").value = usuario.ID;
+      document.getElementById("login").value = usuario.LOGIN;
+      document.getElementById("nome").value = usuario.NOME;
+      document.getElementById("email").value = usuario.EMAIL;
+      document.getElementById("senha").value = ""; 
+      document.getElementById("ativo").checked = usuario.ATIVO == 1;
+
+      const modal = new bootstrap.Modal(
+        document.getElementById("modalCadastroUsuario")
+      );
+      modal.show();
+    }
+
+    async function excluir(id) {
+      if (confirm("Deseja excluir este usuário?")) {
+        try {
+          const res = await fetch(API_URL + "?ID=" + id, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (data.status === "ok") {
+            alert("Usuário excluído com sucesso!");
+            carregar();
+          } else {
+            alert("Erro ao excluir usuário");
+          }
+        } catch (error) {
+          console.error("Erro ao excluir:", error);
+          alert("Erro ao excluir usuário");
+        }
+      }
+    }
+
+    function limpar() {
+      document.getElementById("id").value = "";
+      document.getElementById("login").value = "";
+      document.getElementById("nome").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("senha").value = "";
+      document.getElementById("ativo").checked = false;
+      document.getElementById("pesquisa").value = "";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      carregar();
+    });
+  </script>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+    crossorigin="anonymous"
+  ></script>
+</body>
+</html>
